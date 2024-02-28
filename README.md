@@ -8,7 +8,7 @@
 |                  Command                   |       Aliases       |                            Description                             |
 |:------------------------------------------:|:-------------------:|:------------------------------------------------------------------:|
 | /serverrestarts [reload, version, disable] |      restarts       |                   ServerRestarts admin commands                    |
-|  /restartgracefully [ <seconds>, cancel ]  |        grace        | Manually schedules a restart that will occur in the specified time |
+| /restartgracefully [ *seconds*,  cancel ]  |        grace        | Manually schedules a restart that will occur in the specified time |
 
 ### Permissions:
 ```
