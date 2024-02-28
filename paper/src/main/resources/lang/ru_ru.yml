@@ -1,0 +1,9 @@
+messages:
+  no-permission: "<red>У вас нет прав для использования этой команды."
+  server-restarting: "<gold>Сервер перезагружается и вернется через несколько минут."
+  server-restarting-on-fire: "<gold>Сервер в огне! Перезапуск."
+  restart-delayed-high-playercount: "<gray>Задержка перезапуска на %time% из-за большого количества игроков."
+
+countdown:
+  timed: "<gold>Перезапуск сервера в %time%"
+  now: "<bold><red>Перезапуск сейчас!"

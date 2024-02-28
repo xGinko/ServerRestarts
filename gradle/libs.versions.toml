@@ -1,0 +1,22 @@
+metadata.format.version = "1.1"
+
+[versions]
+runpaperversion = "1.20.4"
+runvelocityversion = "3.2.0-SNAPSHOT"
+foliabundle = "1.20.4-R0.1-SNAPSHOT"
+
+[libraries]
+paper = "io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT"
+folia = "dev.folia:folia-api:1.20.4-R0.1-SNAPSHOT"
+velocity = "com.velocitypowered:velocity-api:3.3.0-SNAPSHOT"
+configmaster = "com.github.thatsmusic99:ConfigurationMaster-API:v2.0.0-rc.1"
+bstats = "org.bstats:bstats-bukkit:3.0.2"
+caffeine = "com.github.ben-manes.caffeine:caffeine:3.1.8"
+
+[plugins]
+runpaper = { id = "xyz.jpenilla.run-paper", version = "2.2.2" }
+runvelocity = { id = "xyz.jpenilla.run-velocity", version = "2.2.2" }
+shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
+userdev = { id = "io.papermc.paperweight.userdev", version = "1.5.11" }
+
+[bundles]

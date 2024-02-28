@@ -1,0 +1,21 @@
+name: ServerRestarts
+version: '${version}'
+main: me.xginko.serverrestarts.ServerRestartsPaper
+authors: [ xGinko ]
+description: '${description}'
+website: '${url}'
+api-version: '1.19'
+folia-supported: true
+load: POSTWORLD
+
+commands:
+  serverrestarts:
+    usage: /serverrestarts [ reload, version, disable ]
+    description: ServerRestart admin commands
+    aliases:
+      - restarts
+  restartgracefully:
+    usage: /restartgracefully [ <seconds> , cancel ]
+    description: Schedule a graceful restart
+    aliases:
+      - grace

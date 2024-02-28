@@ -1,0 +1,9 @@
+messages:
+  no-permission: "<red>Du har ikke tilladelse til at bruge denne kommando."
+  server-restarting: "<gold>Serveren genstarter og ville være tilbage om få minutter."
+  server-restarting-on-fire: "<gold>Der er ild i serveren! Genstarter."
+  restart-delayed-high-playercount: "<gray>Udsætter genstart for %time% grundet høj spillermængde."
+
+countdown:
+  timed: "<gold>Serveren genstarter om %time%"
+  now: "<bold><red>Genstarter nu!"

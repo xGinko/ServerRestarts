@@ -1,0 +1,9 @@
+messages:
+  no-permission: "<red>이 명령어를 사용할 권한이 없습니다."
+  server-restarting: "<gold>서버가 재시작 중이며 잠시 후 다시 시작됩니다."
+  server-restarting-on-fire: "<gold>서버가 불타고 있습니다! 재시작 중입니다."
+  restart-delayed-high-playercount: "<gray>플레이어 수가 많아서 %time% 후에 재시작됩니다."
+
+countdown:
+  timed: "<gold>서버가 %time% 후 재시작됩니다."
+  now: "<bold><red>지금 재시작 중입니다!"

@@ -1,0 +1,9 @@
+messages:
+  no-permission: "<red>Du hast keine Berechtigung für diesen Befehl."
+  server-restarting: "<gold>Server startet neu und ist demnächst wieder online."
+  server-restarting-on-fire: "<gold>Server steht in Flammen! Neustart."
+  restart-delayed-high-playercount: "<gray>Serverneustart wird um %time% wegen hoher Spielerzahl verschoben."
+
+countdown:
+  timed: "<gold>Server startet in %time% neu"
+  now: "<bold><red>Neustart!"

@@ -1,0 +1,16 @@
+# Java
+*.class
+*.jar
+hs_err_pid*
+
+# Gradle
+.gradle/
+build/
+
+# IntelliJ
+.idea
+*.iml
+
+# RunServer
+paper/run/
+velocity/run/

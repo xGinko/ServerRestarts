@@ -1,0 +1,9 @@
+messages:
+  no-permission: "<red>I'm dreadfully sorry, but you don't have the permission to wield this command."
+  server-restarting: "<gold>The server is undergoing rejuvenation and shall return in a few short moments."
+  server-restarting-on-fire: "<gold>Good heavens! The server hath caught fire! A swift restart is imminent."
+  restart-delayed-high-playercount: "<gray>We must delay the restart for %time% owing to the remarkable throng of players."
+
+countdown:
+  timed: "<gold>The server shall reincarnate in %time%"
+  now: "<bold><red>Restarting forthwith!"

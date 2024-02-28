@@ -1,0 +1,9 @@
+messages:
+  no-permission: "<red>Non hai il permesso per utilizzare questo comando."
+  server-restarting: "<gold>Il server si sta riavviando e sarà di nuovo disponibile tra pochi minuti."
+  server-restarting-on-fire: "<gold>Il server è in fiamme! Riavvio in corso."
+  restart-delayed-high-playercount: "<gray>Riavvio ritardato per %time% a causa dell'alto numero di giocatori."
+
+countdown:
+  timed: "<gold>Il server si riavvierà tra %time%"
+  now: "<bold><red>Riavvio immediato!"

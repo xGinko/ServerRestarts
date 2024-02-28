@@ -1,0 +1,9 @@
+messages:
+  no-permission: "<red>Bu komutu kullanma izniniz maalesef yok."
+  server-restarting: "<gold>Sunucu şu anda yeniden başlatılıyor ve birkaç dakika içinde geri dönecektir."
+  server-restarting-on-fire: "<gold>Sunucu alev alev! Yeniden başlatılıyor."
+  restart-delayed-high-playercount: "<gray>%time% süresi boyunca yüksek oyuncu sayısı nedeniyle yeniden başlatma gecikti."
+
+countdown:
+  timed: "<gold>Sunucu %time% içinde yeniden başlatılacak."
+  now: "<bold><red>Şimdi yeniden başlatılıyor!"

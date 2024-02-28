@@ -1,0 +1,9 @@
+messages:
+  no-permission: "<red>No tienes permiso para usar este comando."
+  server-restarting: "<gold>El servidor se está reiniciando y volverá en unos minutos."
+  server-restarting-on-fire: "<gold>¡El servidor está en llamas! Reiniciando."
+  restart-delayed-high-playercount: "<gray>Retrasando el reinicio por %time% debido a la alta cantidad de jugadores."
+
+countdown:
+  timed: "<gold>El servidor se reiniciará en %time%"
+  now: "<bold><red>¡Reiniciando ahora!"

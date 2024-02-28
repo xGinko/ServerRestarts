@@ -1,0 +1,9 @@
+messages:
+  no-permission: "<red>您无权使用此命令。"
+  server-restarting: "<gold>服务器正在重启，将在几分钟内恢复。"
+  server-restarting-on-fire: "<gold>服务器着火了！正在重启。"
+  restart-delayed-high-playercount: "<gray>由于玩家数量过多，重启被推迟 %time%。"
+
+countdown:
+  timed: "<gold>服务器将在 %time% 后重新启动。"
+  now: "<bold><red>立即重新启动！"
