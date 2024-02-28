@@ -48,10 +48,13 @@
                 final Chunk chunk = iterator.next();
                 final boolean complete = !iterator.hasNext();
                 server.getRegionScheduler().execute(plugin, chunk.getWorld(), chunk.getX(), chunk.getZ(), () -> {
-                    final ThreadedRegionizer.ThreadedRegion<TickRegions.TickRegionData, TickRegions.TickRegionSectionData>
-                            currentRegion = TickRegionScheduler.getCurrentRegion();
-                    if (currentRegion != null) currentRegion.regioniser.computeForAllRegionsUnsynchronised(regions::add);
-                    if (complete) future.complete(regions);
+                    try {
+                        final ThreadedRegionizer.ThreadedRegion<TickRegions.TickRegionData, TickRegions.TickRegionSectionData>
+                                currentRegion = TickRegionScheduler.getCurrentRegion();
+                        if (currentRegion != null) currentRegion.regioniser.computeForAllRegionsUnsynchronised(regions::add);
+                    } finally {
+                        if (complete) future.complete(regions);
+                    }
                 });
                 if (complete) break;
             }
