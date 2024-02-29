@@ -42,7 +42,7 @@ public class RestartGracefullyCmd implements TabCompleter, CommandExecutor {
                 activeRestart.cancel();
                 sender.sendMessage(Component.text("Cancelled graceful restart.").color(NamedTextColor.GREEN));
             } else {
-                sender.sendMessage(Component.text("There is no pending graceful restart."));
+                sender.sendMessage(Component.text("There is no pending restart scheduled by this command."));
             }
             return true;
         }
@@ -82,10 +82,12 @@ public class RestartGracefullyCmd implements TabCompleter, CommandExecutor {
                     return;
                 }
 
-                for (Player player : plugin.getServer().getOnlinePlayers()) {
-                    switch (ServerRestartsPaper.getConfiguration().message_mode) {
-                        case ACTIONBAR -> player.sendActionBar(ServerRestartsPaper.getLang(player.locale()).time_until_restart(remaining));
-                        case BROADCAST -> player.sendMessage(ServerRestartsPaper.getLang(player.locale()).time_until_restart(remaining));
+                if (ServerRestartsPaper.getConfiguration().notification_times.stream().anyMatch(notifyTimeLeft -> notifyTimeLeft.equals(remaining))) {
+                    for (Player player : plugin.getServer().getOnlinePlayers()) {
+                        switch (ServerRestartsPaper.getConfiguration().message_mode) {
+                            case ACTIONBAR -> player.sendActionBar(ServerRestartsPaper.getLang(player.locale()).time_until_restart(remaining));
+                            case BROADCAST -> player.sendMessage(ServerRestartsPaper.getLang(player.locale()).time_until_restart(remaining));
+                        }
                     }
                 }
 

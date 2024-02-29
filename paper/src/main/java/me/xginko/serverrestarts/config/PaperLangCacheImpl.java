@@ -41,7 +41,7 @@ public class PaperLangCacheImpl implements ILangCache {
         this.restart_delayed_playercount = getTranslation("messages.restart-delayed-high-playercount",
                 "<gray>Delaying restart for %time% due to high playercount.");
 
-        this.restart_in = getTranslation("countdown.timed", "<gold>Restarting in %time% ...");
+        this.restart_in = getTranslation("countdown.timed", "<gold>Restarting in %time%");
         this.countdown_now = getTranslation("countdown.now", "<bold><red>Restarting now");
 
         try {
@@ -51,11 +51,14 @@ public class PaperLangCacheImpl implements ILangCache {
         }
     }
 
+    public @NotNull Component restart_delayed_playercount(final Duration delayTime) {
+        return this.restart_delayed_playercount.replaceText(TextReplacementConfig.builder()
+                .match("%time%").replacement(CommonUtil.formatDuration(delayTime)).build());
+    }
+
     public @NotNull Component time_until_restart(final Duration remainingTime) {
         return this.restart_in.replaceText(TextReplacementConfig.builder()
-                .match("%time%")
-                .replacement(CommonUtil.formatDuration(remainingTime))
-                .build());
+                .match("%time%").replacement(CommonUtil.formatDuration(remainingTime)).build());
     }
 
     @Override

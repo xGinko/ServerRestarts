@@ -48,7 +48,7 @@ public class PaperConfigImpl implements IPluginConfig {
                 "If set to true, will display messages based on client language");
 
         // General Settings
-        this.tick_report_cache_time = Duration.ofMillis(Math.max(getInt("general.tps-cache-time-ticks", 40,
+        this.tick_report_cache_time = Duration.ofMillis(Math.max(getInt("general.tps-cache-time-ticks", 60,
                 "How long a checked tps is cached to save resources in ticks (1 sec = 20 ticks)"), 20) * 50L);
         RestartMethod method = RestartMethod.BUKKIT_SHUTDOWN;
         String configuredMethod = getString("general.restart-method", RestartMethod.BUKKIT_SHUTDOWN.name(),

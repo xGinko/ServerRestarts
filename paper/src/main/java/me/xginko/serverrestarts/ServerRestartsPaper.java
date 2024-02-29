@@ -181,7 +181,7 @@ public final class ServerRestartsPaper extends JavaPlugin {
                 }
             }
         } catch (Exception e) {
-            logger.error("Error loading language files! Language files will not reload to avoid errors, make sure to correct this before restarting the server!", e);
+            logger.error("Error loading language files!", e);
         }
     }
 
@@ -192,7 +192,7 @@ public final class ServerRestartsPaper extends JavaPlugin {
                     .filter(name -> name.startsWith("lang/") && name.endsWith(".yml"))
                     .collect(Collectors.toSet());
         } catch (IOException e) {
-            logger.error("Failed getting default lang files!", e);
+            logger.error("Failed getting default language files!", e);
             return Collections.emptySet();
         }
     }

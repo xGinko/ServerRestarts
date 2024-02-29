@@ -5,6 +5,6 @@ plugins {
 
 allprojects {
     group = "me.xginko.serverrestarts"
-    version = "1.0.0"
+    version = "1.1.0"
     description = "Simple server restarting plugin for modern server setups."
 }
