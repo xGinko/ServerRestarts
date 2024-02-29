@@ -45,11 +45,11 @@ public class RestartTimer implements ServerRestartModule {
     @Override
     public void enable() {
         for (ZonedDateTime restart_time : config.restart_times) {
-            final List<Duration> valid_notify_times = getValidNotificationTimes(restart_time);
+            Duration initDelay = getValidDelay(restart_time);
             pendingRestarts.add(plugin.getServer().getAsyncScheduler().runDelayed(
                     plugin,
-                    initRestart -> tryInitRestart(valid_notify_times),
-                    getValidDelay(restart_time, valid_notify_times),
+                    initRestart -> tryInitRestart(initDelay),
+                    initDelay.toMillis(),
                     TimeUnit.MILLISECONDS
             ));
         }
@@ -61,21 +61,18 @@ public class RestartTimer implements ServerRestartModule {
         if (this.activeRestart != null) activeRestart.countdownTask().cancel();
     }
 
-    private long getValidDelay(ZonedDateTime restart_time, List<Duration> valid_notify_times) {
-        Duration duration = Duration.between(ZonedDateTime.now(config.time_zone_id), restart_time);
-        if (duration.isNegative() || duration.isZero()) return 50L;
-        if (valid_notify_times.isEmpty()) return duration.toMillis();
-        return Math.max(50, duration.minus(valid_notify_times.get(0)).toMillis());
-    }
-
-    private List<Duration> getValidNotificationTimes(ZonedDateTime restart_time) {
-        return config.notification_times.stream()
+    private Duration getValidDelay(ZonedDateTime restart_time) {
+        final Duration delay = config.notification_times.stream()
                 .filter(notifTime -> Duration.between(ZonedDateTime.now(config.time_zone_id), restart_time).compareTo(notifTime) > 0)
-                .sorted(Collections.reverseOrder(Comparator.comparingLong(Duration::toNanos)))
-                .toList();
+                .max(Comparator.comparingLong(Duration::toNanos))
+                .orElse(Duration.between(ZonedDateTime.now(config.time_zone_id), restart_time));
+        if (delay.isNegative() || delay.isZero()) {
+            return Duration.ofMillis(1000);
+        }
+        return delay;
     }
 
-    private void tryInitRestart(List<Duration> notifTimes) {
+    private void tryInitRestart(Duration init) {
         if (ServerRestartsPaper.isRestarting) {
             disable();
             return;
@@ -85,7 +82,7 @@ public class RestartTimer implements ServerRestartModule {
         if (!preRestartEvent.callEvent()) return;
 
         final RestartEvent.RestartType restartType = preRestartEvent.getDelayTicks() <= 1L ? RestartEvent.RestartType.SCHEDULED : RestartEvent.RestartType.DELAYED;
-        final AtomicReference<Duration> timeLeft = new AtomicReference<>(notifTimes.isEmpty() ? Duration.ofMillis(0) : notifTimes.get(0));
+        final AtomicReference<Duration> timeLeft = new AtomicReference<>(init);
 
         this.activeRestart = new RestartTask(plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, countdown -> {
             Duration remaining = timeLeft.get();
@@ -115,7 +112,7 @@ public class RestartTimer implements ServerRestartModule {
                 return;
             }
 
-            if (notifTimes.stream().anyMatch(notifyTimeLeft -> notifyTimeLeft.equals(remaining))) {
+            if (config.notification_times.stream().anyMatch(notifyTimeLeft -> notifyTimeLeft.equals(remaining))) {
                 for (Player player : plugin.getServer().getOnlinePlayers()) {
                     switch (ServerRestartsPaper.getConfiguration().message_mode) {
                         case ACTIONBAR -> player.sendActionBar(ServerRestartsPaper.getLang(player.locale()).time_until_restart(remaining));
