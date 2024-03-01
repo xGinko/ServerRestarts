@@ -60,68 +60,62 @@ public class FireWatch implements ServerRestartModule {
 
     @Override
     public void enable() {
-        this.heartbeat = server.getAsyncScheduler().runAtFixedRate(
-                plugin,
-                task -> {
-                    if (ServerRestartsPaper.isRestarting) {
-                        disable();
-                        return;
-                    }
+        this.heartbeat = server.getAsyncScheduler().runAtFixedRate(plugin, task -> {
+            if (ServerRestartsPaper.isRestarting) {
+                disable();
+                return;
+            }
 
-                    final double tps = tickReports.getTPS();
-                    final double mspt = tickReports.getMSPT();
+            final double tps = tickReports.getTPS();
+            final double mspt = tickReports.getMSPT();
 
-                    if (tps > restart_tps && mspt < restart_mspt) {
-                        millis_spent_lagging.set(0L); // No lag, reset time
-                        return;
-                    }
+            if (tps > restart_tps && mspt < restart_mspt) {
+                millis_spent_lagging.set(0L); // No lag, reset time
+                return;
+            }
 
-                    final long millis_lagging = millis_spent_lagging.addAndGet(interval_millis);
+            final long millis_lagging = millis_spent_lagging.addAndGet(interval_millis);
 
-                    for (Player player : server.getOnlinePlayers()) {
-                        switch (ServerRestartsPaper.getConfiguration().message_mode) {
-                            case ACTIONBAR -> player.sendActionBar(ServerRestartsPaper.getLang(player.locale())
-                                    .time_until_restart(Duration.ofMillis(max_millis_lagging - millis_lagging)));
-                            case BROADCAST -> player.sendMessage(ServerRestartsPaper.getLang(player.locale())
-                                    .time_until_restart(Duration.ofMillis(max_millis_lagging - millis_lagging)));
-                        }
-                    }
+            for (Player player : server.getOnlinePlayers()) {
+                switch (ServerRestartsPaper.getConfiguration().message_mode) {
+                    case ACTIONBAR -> player.sendActionBar(ServerRestartsPaper.getLang(player.locale())
+                            .time_until_restart(Duration.ofMillis(max_millis_lagging - millis_lagging)));
+                    case BROADCAST -> player.sendMessage(ServerRestartsPaper.getLang(player.locale())
+                            .time_until_restart(Duration.ofMillis(max_millis_lagging - millis_lagging)));
+                }
+            }
 
-                    if (millis_lagging <= max_millis_lagging) {
-                        return; // Not lagging for long enough yet
-                    }
+            if (millis_lagging <= max_millis_lagging) {
+                return; // Not lagging for long enough yet
+            }
 
-                    RestartEvent restartEvent = new RestartEvent(
-                            true,
-                            RestartEvent.RestartType.ON_FIRE,
-                            ServerRestartsPaper.getConfiguration().restart_method,
-                            do_safe_restart,
-                            do_safe_restart
-                    );
+            RestartEvent restartEvent = new RestartEvent(
+                    true,
+                    RestartEvent.RestartType.ON_FIRE,
+                    ServerRestartsPaper.getConfiguration().restart_method,
+                    do_safe_restart,
+                    do_safe_restart
+            );
 
-                    if (!restartEvent.callEvent()) {
-                        return;
-                    }
+            if (!restartEvent.callEvent()) {
+                return;
+            }
 
-                    ServerRestartsPaper.joiningAllowed = false;
+            ServerRestartsPaper.joiningAllowed = false;
 
-                    ServerRestartsPaper.getLog().error(Component.text("Restarting server because on fire! -> " +
-                                    "Lag Duration: " + CommonUtil.formatDuration(Duration.ofMillis(millis_spent_lagging.get())) + " · " +
-                                    "TPS: " + String.format("%.2f", tps) + " · " +
-                                    "MSPT: " + String.format("%.2f", mspt))
-                            .color(TextColor.color(255, 81, 112)).decorate(TextDecoration.BOLD));
+            ServerRestartsPaper.getLog().error(Component.text("Restarting server because on fire! -> " +
+                            "Lag Duration: " + CommonUtil.formatDuration(Duration.ofMillis(millis_lagging)) + " · " +
+                            "TPS: " + String.format("%.2f", tps) + " · " +
+                            "MSPT: " + String.format("%.2f", mspt))
+                    .color(TextColor.color(255, 81, 112)).decorate(TextDecoration.BOLD));
 
-                    ServerRestartsPaper.restart(
-                            restartEvent.getType(),
-                            restartEvent.getMethod(),
-                            restartEvent.getDisableJoin(),
-                            restartEvent.getKickAll()
-                    );
-                },
-                initial_delay_millis,
-                interval_millis,
-                TimeUnit.MILLISECONDS
-        );
+            ServerRestartsPaper.restart(
+                    restartEvent.getType(),
+                    restartEvent.getMethod(),
+                    restartEvent.getDisableJoin(),
+                    restartEvent.getKickAll()
+            );
+        }, initial_delay_millis, interval_millis, TimeUnit.MILLISECONDS);
     }
 
     @Override
