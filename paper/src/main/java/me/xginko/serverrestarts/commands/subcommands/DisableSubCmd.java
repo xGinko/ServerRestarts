@@ -33,7 +33,7 @@ public class DisableSubCmd extends SubCommand {
         }
 
         sender.sendMessage(Component.text("Disabling SimpleRestarts...").color(NamedTextColor.RED));
-        ServerRestartsPaper.getInstance().disablePlugin();
+        ServerRestartsPaper.getInstance().disableModules();
         sender.sendMessage(Component.text("Disabled all plugin listeners and tasks.").color(NamedTextColor.GREEN));
         sender.sendMessage(Component.text("You can enable the plugin again using the reload command.").color(NamedTextColor.YELLOW));
     }

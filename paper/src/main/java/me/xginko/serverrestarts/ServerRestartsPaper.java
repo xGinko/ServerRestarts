@@ -78,7 +78,7 @@ public final class ServerRestartsPaper extends JavaPlugin {
             metrics.shutdown();
             metrics = null;
         }
-        ServerRestartModule.modules.forEach(ServerRestartModule::disable);
+        disableModules();
         HandlerList.unregisterAll(this);
         instance = null;
         config = null;
@@ -154,7 +154,7 @@ public final class ServerRestartsPaper extends JavaPlugin {
         reloadConfiguration();
     }
 
-    public void disablePlugin() {
+    public void disableModules() {
         ServerRestartModule.modules.forEach(ServerRestartModule::disable);
         ServerRestartModule.modules.clear();
     }
