@@ -18,15 +18,11 @@ import java.util.Arrays;
 
 public class VelocityRestartsCmd {
 
-    private final @NotNull ServerRestartsVelocity plugin;
-    private final @NotNull CommandManager commandManager;
-
-    public VelocityRestartsCmd(@NotNull ServerRestartsVelocity plugin, @NotNull CommandManager commandManager) {
-        this.plugin = plugin;
-        this.commandManager = commandManager;
+    public static void register(@NotNull ServerRestartsVelocity plugin, @NotNull CommandManager commandManager) {
+        new VelocityRestartsCmd(plugin, commandManager);
     }
 
-    public void register() {
+    public VelocityRestartsCmd(@NotNull ServerRestartsVelocity plugin, @NotNull CommandManager commandManager) {
         LiteralCommandNode<CommandSource> commandNode = LiteralArgumentBuilder
                 .<CommandSource>literal("vrestarts")
                 .requires(sender -> Arrays.stream(SRPermission.values()).anyMatch(perm -> sender.hasPermission(perm.permission())))
@@ -51,7 +47,7 @@ public class VelocityRestartsCmd {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("disable")
                         .requires(source -> source.hasPermission(SRPermission.DISABLE.permission()))
                         .executes(context -> {
-                            plugin.disablePlugin();
+                            plugin.cancelTasks();
                             return Command.SINGLE_SUCCESS;
                         })
                 )
@@ -62,7 +58,7 @@ public class VelocityRestartsCmd {
                             context.getSource().sendMessage(Component.newline()
                                     .append(Component.text(pluginJSON.getName()+" "+pluginJSON.getVersion())
                                             .color(NamedTextColor.GOLD)
-                                            .clickEvent(ClickEvent.openUrl(pluginJSON.getUrl().isPresent() ? pluginJSON.getUrl().get() : "https://github.com/xGinko/ServerRestart")))
+                                            .clickEvent(ClickEvent.openUrl(pluginJSON.getUrl().orElse("https://github.com/xGinko/ServerRestarts"))))
                                     .append(Component.text(" by ").color(NamedTextColor.GRAY))
                                     .append(Component.text(pluginJSON.getAuthors().get(0))
                                             .color(NamedTextColor.DARK_AQUA)
@@ -78,11 +74,11 @@ public class VelocityRestartsCmd {
 
     private void showCmdHelp(CommandSource sender) {
         sender.sendMessage(Component.text("-----------------------------------------------------").color(NamedTextColor.GRAY));
-        sender.sendMessage(Component.text("ServerRestart Velocity Commands").color(NamedTextColor.GOLD));
+        sender.sendMessage(Component.text("ServerRestartsVelocity Commands").color(NamedTextColor.GOLD));
         sender.sendMessage(Component.text("-----------------------------------------------------").color(NamedTextColor.GRAY));
-        sender.sendMessage(Component.text("/restarts reload - Reload the plugin configuration").color(NamedTextColor.WHITE));
-        sender.sendMessage(Component.text("/restarts version - Show the plugin version").color(NamedTextColor.WHITE));
-        sender.sendMessage(Component.text("/restarts disable - Disable the plugin").color(NamedTextColor.WHITE));
+        sender.sendMessage(Component.text("/vrestarts reload - Reload the plugin configuration").color(NamedTextColor.WHITE));
+        sender.sendMessage(Component.text("/vrestarts version - Show the plugin version").color(NamedTextColor.WHITE));
+        sender.sendMessage(Component.text("/vrestarts disable - Disable the plugin").color(NamedTextColor.WHITE));
         sender.sendMessage(Component.text("-----------------------------------------------------").color(NamedTextColor.GRAY));
     }
 }

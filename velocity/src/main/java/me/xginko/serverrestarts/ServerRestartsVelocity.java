@@ -44,7 +44,7 @@ public final class ServerRestartsVelocity {
         logger.info(Component.text("                                                          ").style(CommonUtil.BOLD_COLOR));
 
         reloadPlugin();
-        new VelocityRestartsCmd(this, server.getCommandManager()).register();
+        VelocityRestartsCmd.register(this, server.getCommandManager());
     }
 
     public static ComponentLogger getLogger() {
@@ -55,12 +55,12 @@ public final class ServerRestartsVelocity {
         return server;
     }
 
-    public void disablePlugin() {
+    public void cancelTasks() {
         server.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
     }
 
     public void reloadPlugin() {
-        disablePlugin();
+        cancelTasks();
         reloadConfig();
         config.restart_times.forEach(restart_time -> server.getScheduler()
                 .buildTask(this, shutdown -> server.shutdown(config.server_restarting))
