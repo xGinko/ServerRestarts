@@ -17,6 +17,7 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -77,6 +78,17 @@ public final class ServerRestartsPaper extends JavaPlugin {
             metrics.shutdown();
             metrics = null;
         }
+        ServerRestartModule.modules.forEach(ServerRestartModule::disable);
+        HandlerList.unregisterAll(this);
+        instance = null;
+        config = null;
+        languageCacheMap = null;
+        cachedTickReport = null;
+        server = null;
+        logger = null;
+        isFolia = false;
+        isRestarting = false;
+        joiningAllowed = true;
     }
 
     public static void restart(RestartEvent.RestartType type, RestartMethod method, boolean disableJoining, boolean kickAll) {
