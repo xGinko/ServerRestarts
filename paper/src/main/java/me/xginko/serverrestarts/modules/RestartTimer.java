@@ -46,7 +46,6 @@ public class RestartTimer implements ServerRestartModule {
     public void enable() {
         for (ZonedDateTime restart_time : config.restart_times) {
             final Duration time_left_until_restart = getAdjustedDelay(restart_time);
-            ServerRestartsPaper.getLog().info("Restart Time: " + restart_time + ". Time left until restart: " + time_left_until_restart);
             pendingRestarts.add(plugin.getServer().getAsyncScheduler().runDelayed(
                     plugin,
                     initRestart -> tryInitRestart(time_left_until_restart),
