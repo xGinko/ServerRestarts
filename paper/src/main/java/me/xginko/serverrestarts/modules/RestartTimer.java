@@ -45,7 +45,7 @@ public class RestartTimer implements ServerRestartModule {
     @Override
     public void enable() {
         for (ZonedDateTime restart_time : config.restart_times) {
-            final Duration time_left_until_restart = getAdjustedDelay(restart_time);
+            final Duration time_left_until_restart = getDelay(restart_time);
             pendingRestarts.add(plugin.getServer().getAsyncScheduler().runDelayed(
                     plugin,
                     initRestart -> tryInitRestart(time_left_until_restart),
@@ -55,14 +55,17 @@ public class RestartTimer implements ServerRestartModule {
         }
     }
 
-    private Duration getAdjustedDelay(ZonedDateTime restart_time) {
+    /*
+    * Returns a sensible delay to when to initiate the restart countdown logic,
+    * so we restart precisely at the configured time.
+    * */
+    private Duration getDelay(ZonedDateTime restart_time) {
         final Duration between_now_and_restart_time = Duration.between(ZonedDateTime.now(config.time_zone_id), restart_time);
-        // If duration is smaller than 1 second, return 1 second
         if (between_now_and_restart_time.toSeconds() < 1) {
             return Duration.ofSeconds(1);
         }
-        // If duration is greater than one of the configured restart durations, return original duration
-        if (between_now_and_restart_time.compareTo(config.notification_times.get(0)) > 0) {
+        // If duration is greater than the largest configured countdown duration, no need to adjust.
+        if (!config.notification_times.isEmpty() && between_now_and_restart_time.compareTo(config.notification_times.get(0)) > 0) {
             return between_now_and_restart_time;
         }
         // If not, return closest restart duration compared to the time left
