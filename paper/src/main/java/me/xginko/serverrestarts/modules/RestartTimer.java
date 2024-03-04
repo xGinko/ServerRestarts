@@ -45,31 +45,40 @@ public class RestartTimer implements ServerRestartModule {
     @Override
     public void enable() {
         for (ZonedDateTime restart_time : config.restart_times) {
-            Duration initDelay = getValidDelay(restart_time);
+            final Duration time_left_until_restart = getAdjustedDelay(restart_time);
             pendingRestarts.add(plugin.getServer().getAsyncScheduler().runDelayed(
                     plugin,
-                    initRestart -> tryInitRestart(initDelay),
-                    initDelay.toMillis(),
+                    initRestart -> tryInitRestart(time_left_until_restart),
+                    time_left_until_restart.toMillis(),
                     TimeUnit.MILLISECONDS
             ));
         }
+    }
+
+    /*
+    * This method helps getting an accurate delay by taking configured notify times into consideration.
+    *
+    * For example:
+    *   The next restart should happen in 5 minutes.
+    *   We have configured to notify players when there is only 30mins left, then 15mins, then
+    *   5mins, then 1min, etc.
+    *   We cant take away 30mins from the delay until countdown because that would result in a negative duration.
+    *   Therefore we filter out any notification time that would result in a zero or negative delay and use the biggest one
+    *   of those results.
+    * */
+    private Duration getAdjustedDelay(ZonedDateTime restart_time) {
+        final Duration between_now_and_restart_time = Duration.between(ZonedDateTime.now(config.time_zone_id), restart_time);
+        if (between_now_and_restart_time.toSeconds() < 1) return Duration.ofSeconds(1);
+        return config.notification_times.stream()
+                .filter(duration_left_notification -> between_now_and_restart_time.compareTo(duration_left_notification) > 0)
+                .max(Comparator.comparingLong(Duration::toNanos))
+                .orElse(between_now_and_restart_time);
     }
 
     @Override
     public void disable() {
         this.pendingRestarts.forEach(ScheduledTask::cancel);
         if (this.activeRestart != null) activeRestart.countdownTask().cancel();
-    }
-
-    private Duration getValidDelay(ZonedDateTime restart_time) {
-        final Duration delay = config.notification_times.stream()
-                .filter(notifTime -> Duration.between(ZonedDateTime.now(config.time_zone_id), restart_time).compareTo(notifTime) > 0)
-                .max(Comparator.comparingLong(Duration::toNanos))
-                .orElse(Duration.between(ZonedDateTime.now(config.time_zone_id), restart_time));
-        if (delay.isNegative() || delay.isZero()) {
-            return Duration.ofMillis(1000);
-        }
-        return delay;
     }
 
     private void tryInitRestart(Duration init) {

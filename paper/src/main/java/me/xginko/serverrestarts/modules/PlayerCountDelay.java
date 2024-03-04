@@ -1,11 +1,8 @@
 package me.xginko.serverrestarts.modules;
 
 import me.xginko.serverrestarts.ServerRestartsPaper;
-import me.xginko.serverrestarts.common.CommonUtil;
-import me.xginko.serverrestarts.events.PreRestartEvent;
 import me.xginko.serverrestarts.config.PaperConfigImpl;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import me.xginko.serverrestarts.events.PreRestartEvent;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,7 +29,7 @@ public class PlayerCountDelay implements ServerRestartModule, Listener {
         this.notify_players = config.getBoolean("player-count-delay.notify-players", false);
         this.min_players_for_delay = Math.max(1, config.getInt("player-count-delay.min-players-for-delay", 20,
                 "If the player count is this value or bigger, restart logic will be delayed."));
-        this.delay_ticks = Math.max(1, config.getInt("player-count-delay.delay-seconds", 300,
+        this.delay_ticks = Math.max(1, config.getInt("player-count-delay.delay-seconds", 10800,
                 "Time in seconds until plugin will check again if it can restart.")) * 20L;
     }
 
@@ -58,23 +55,26 @@ public class PlayerCountDelay implements ServerRestartModule, Listener {
             return;
         }
 
-        if (server.getOnlinePlayers().size() >= min_players_for_delay) {
-            event.setDelayTicks(delay_ticks);
-            final Duration delayDuration = Duration.ofMillis(delay_ticks * 50L);
+        if (server.getOnlinePlayers().size() < min_players_for_delay) {
+            return;
+        }
 
-            if (notify_players) {
-                for (Player player : server.getOnlinePlayers()) {
-                    switch (ServerRestartsPaper.getConfiguration().message_mode) {
-                        case ACTIONBAR -> player.sendActionBar(ServerRestartsPaper.getLang(player.locale())
-                                .restart_delayed_playercount(delayDuration));
-                        case BROADCAST -> player.sendMessage(ServerRestartsPaper.getLang(player.locale())
-                                .time_until_restart(delayDuration));
-                    }
+        event.setDelayTicks(delay_ticks);
+
+        if (notify_players) {
+            for (final Player player : server.getOnlinePlayers()) {
+                switch (ServerRestartsPaper.getConfiguration().message_mode) {
+                    case ACTIONBAR -> player.sendActionBar(ServerRestartsPaper.getLang(player.locale())
+                            .restart_delayed_playercount(Duration.ofMillis(delay_ticks * 50L)));
+                    case BROADCAST -> player.sendMessage(ServerRestartsPaper.getLang(player.locale())
+                            .time_until_restart(Duration.ofMillis(delay_ticks * 50L)));
                 }
             }
+        }
 
-            if (should_log) ServerRestartsPaper.getLog().info(Component.text("Server restart has been delayed by " +
-                    CommonUtil.formatDuration(delayDuration) + " due to high player count.").color(NamedTextColor.GOLD));
+        if (should_log) {
+            ServerRestartsPaper.getLog().info(ServerRestartsPaper.getLang(ServerRestartsPaper.getConfiguration().default_lang)
+                    .restart_delayed_playercount(Duration.ofMillis(delay_ticks * 50L)));
         }
     }
 }
