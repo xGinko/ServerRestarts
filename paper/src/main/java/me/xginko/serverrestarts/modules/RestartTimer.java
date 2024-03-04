@@ -64,8 +64,8 @@ public class RestartTimer implements ServerRestartModule {
         if (between_now_and_restart_time.toSeconds() < 1) {
             return Duration.ofSeconds(1);
         }
-        // If duration is greater than the largest configured countdown duration, no need to adjust.
-        if (!config.notification_times.isEmpty() && between_now_and_restart_time.compareTo(config.notification_times.get(0)) > 0) {
+        // If there are no countdown durations or duration is greater than the largest configured countdown duration, no need to adjust.
+        if (config.notification_times.isEmpty() || between_now_and_restart_time.compareTo(config.notification_times.get(0)) > 0) {
             return between_now_and_restart_time;
         }
         // If not, return closest restart duration compared to the time left
