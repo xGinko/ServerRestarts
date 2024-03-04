@@ -46,6 +46,7 @@ public class RestartTimer implements ServerRestartModule {
     public void enable() {
         for (ZonedDateTime restart_time : config.restart_times) {
             final Duration time_left_until_restart = getAdjustedDelay(restart_time);
+            ServerRestartsPaper.getLog().info("Restart Time: " + restart_time + ". Time left until restart: " + time_left_until_restart);
             pendingRestarts.add(plugin.getServer().getAsyncScheduler().runDelayed(
                     plugin,
                     initRestart -> tryInitRestart(time_left_until_restart),
@@ -55,20 +56,17 @@ public class RestartTimer implements ServerRestartModule {
         }
     }
 
-    /*
-    * This method helps getting an accurate delay by taking configured notify times into consideration.
-    *
-    * For example:
-    *   The next restart should happen in 5 minutes.
-    *   We have configured to notify players when there is only 30mins left, then 15mins, then
-    *   5mins, then 1min, etc.
-    *   We cant take away 30mins from the delay until countdown because that would result in a negative duration.
-    *   Therefore we filter out any notification time that would result in a zero or negative delay and use the biggest one
-    *   of those results.
-    * */
     private Duration getAdjustedDelay(ZonedDateTime restart_time) {
         final Duration between_now_and_restart_time = Duration.between(ZonedDateTime.now(config.time_zone_id), restart_time);
-        if (between_now_and_restart_time.toSeconds() < 1) return Duration.ofSeconds(1);
+        // If duration is smaller than 1 second, return 1 second
+        if (between_now_and_restart_time.toSeconds() < 1) {
+            return Duration.ofSeconds(1);
+        }
+        // If duration is greater than one of the configured restart durations, return original duration
+        if (between_now_and_restart_time.compareTo(config.notification_times.get(0)) > 0) {
+            return between_now_and_restart_time;
+        }
+        // If not, return closest restart duration compared to the time left
         return config.notification_times.stream()
                 .filter(duration_left_notification -> between_now_and_restart_time.compareTo(duration_left_notification) > 0)
                 .max(Comparator.comparingLong(Duration::toNanos))
