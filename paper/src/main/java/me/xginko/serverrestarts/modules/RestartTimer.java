@@ -56,7 +56,7 @@ public class RestartTimer implements ServerRestartModule {
     }
 
     /*
-    * Returns a sensible delay to when to initiate the restart countdown logic,
+    * Returns a sensible delay for when to initiate the restart countdown logic,
     * so we restart precisely at the configured time.
     * */
     private Duration getDelay(ZonedDateTime restart_time) {
