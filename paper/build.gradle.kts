@@ -38,6 +38,6 @@ tasks.shadowJar {
         "META-INF/LICENSE.txt",
         "META-INF/NOTICE.txt"
     )
-    relocate("com.github.benmanes.caffeine", "me.xginko.serverrestart.libs.caffeine")
-    relocate("org.bstats", "me.xginko.serverrestart.libs.bstats")
+    relocate("com.github.benmanes.caffeine", "me.xginko.serverrestarts.libs.caffeine")
+    relocate("org.bstats", "me.xginko.serverrestarts.libs.bstats")
 }
