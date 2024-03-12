@@ -57,11 +57,10 @@ public class VelocityConfigImpl implements IPluginConfig {
                 .distinct()
                 .map(timeString -> {
                     try {
-                        final String[] numbers = timeString.split(":");
-                        return this.getRestartTime(
-                                Integer.parseInt(numbers[0].trim(), 10),
-                                Integer.parseInt(numbers[1].trim(), 10),
-                                Integer.parseInt(numbers[2].trim(), 10));
+                        final int hour = Integer.parseInt(timeString.substring(0, 2), 10);
+                        final int minute = Integer.parseInt(timeString.substring(3, 5), 10);
+                        final int second = Integer.parseInt(timeString.substring(6, 8), 10);
+                        return this.getRestartTime(hour, minute, second);
                     } catch (Throwable t) {
                         ServerRestartsVelocity.getLogger().warn("Restart time '"+timeString+"' is not formatted properly. " +
                                 "Format: 23:59:59 -> hour:minute:second");
@@ -82,9 +81,7 @@ public class VelocityConfigImpl implements IPluginConfig {
     public @NotNull ZonedDateTime getRestartTime(int hours, int minutes, int seconds) throws DateTimeException {
         ZonedDateTime now = ZonedDateTime.now(time_zone_id);
         ZonedDateTime nextRestart = now.withHour(hours).withMinute(minutes).withSecond(seconds);
-        if (now.isAfter(nextRestart) || now.isEqual(nextRestart))
-            return nextRestart.plusDays(1);
-        return nextRestart;
+        return nextRestart.isAfter(now) ? nextRestart : nextRestart.plusDays(1);
     }
 
     @Override
