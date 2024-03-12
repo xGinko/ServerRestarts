@@ -62,11 +62,12 @@ public final class ServerRestartsVelocity {
     public void reloadPlugin() {
         cancelTasks();
         reloadConfig();
-        config.restart_times.forEach(restart_time -> server.getScheduler()
-                .buildTask(this, shutdown -> server.shutdown(config.server_restarting))
-                .delay(Duration.between(ZonedDateTime.now(config.time_zone_id), restart_time).getSeconds(), TimeUnit.SECONDS)
-                .repeat(Duration.ofDays(1))
-                .schedule());
+        final ZonedDateTime now = ZonedDateTime.now(config.time_zone_id);
+        config.restart_times.stream().map(restart_time -> restart_time.isAfter(now) ? restart_time : restart_time.plusDays(1))
+                .forEach(restart_time -> server.getScheduler()
+                        .buildTask(this, shutdown -> server.shutdown(config.server_restarting))
+                        .delay(Duration.between(now, restart_time).getSeconds(), TimeUnit.SECONDS)
+                        .schedule());
     }
 
     private void reloadConfig() {
