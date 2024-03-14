@@ -50,7 +50,7 @@ public class RestartTimer implements ServerRestartModule {
             pendingRestarts.add(plugin.getServer().getGlobalRegionScheduler().runDelayed(
                     plugin,
                     initRestart -> tryInitRestart(time_left_until_restart),
-                    time_left_until_restart.toSeconds() / 20L
+                    time_left_until_restart.toSeconds() * 20L
             ));
         }
     }
