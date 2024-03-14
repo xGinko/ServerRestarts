@@ -14,8 +14,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RestartTimer implements ServerRestartModule {
@@ -46,11 +47,10 @@ public class RestartTimer implements ServerRestartModule {
     public void enable() {
         for (ZonedDateTime restart_time : config.restart_times) {
             final Duration time_left_until_restart = getDelay(restart_time);
-            pendingRestarts.add(plugin.getServer().getAsyncScheduler().runDelayed(
+            pendingRestarts.add(plugin.getServer().getGlobalRegionScheduler().runDelayed(
                     plugin,
                     initRestart -> tryInitRestart(time_left_until_restart),
-                    time_left_until_restart.toMillis(),
-                    TimeUnit.MILLISECONDS
+                    time_left_until_restart.toSeconds() / 20L
             ));
         }
     }
