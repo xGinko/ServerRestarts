@@ -60,13 +60,15 @@ public class PaperConfigImpl implements IPluginConfig {
             ServerRestartsPaper.getLog().warn(String.join(", ", Arrays.stream(RestartMethod.values()).map(Enum::name).toList()));
         }
         this.restart_method = method;
-        ZoneId zoneId = ZoneId.systemDefault();
+        ZoneId zoneId;
         try {
-            zoneId = ZoneId.of(getString("general.timezone", zoneId.getId(),
+            zoneId = ZoneId.of(getString("general.timezone", ZoneId.systemDefault().getId(),
                     "The TimeZone (ZoneId) to use for scheduling restart times."));
         } catch (ZoneRulesException e) {
+            zoneId = ZoneId.systemDefault();
             ServerRestartsPaper.getLog().warn("Configured timezone could not be found. Using host zone '"+zoneId+"' (System Default)");
         } catch (DateTimeException e) {
+            zoneId = ZoneId.systemDefault();
             ServerRestartsPaper.getLog().warn("Configured timezone has an invalid format. Using '"+zoneId+"' (System Default)");
         }
         this.time_zone_id = zoneId;
