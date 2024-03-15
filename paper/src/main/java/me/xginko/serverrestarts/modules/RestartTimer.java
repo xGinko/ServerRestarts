@@ -87,7 +87,7 @@ public class RestartTimer implements ServerRestartModule {
             return;
         }
 
-        PreRestartEvent preRestartEvent = new PreRestartEvent(true);
+        PreRestartEvent preRestartEvent = new PreRestartEvent(false);
         if (!preRestartEvent.callEvent()) return;
 
         final RestartEvent.RestartType restartType = preRestartEvent.getDelayTicks() <= 1L ? RestartEvent.RestartType.SCHEDULED : RestartEvent.RestartType.DELAYED;
