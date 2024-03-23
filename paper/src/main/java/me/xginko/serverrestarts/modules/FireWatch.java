@@ -1,6 +1,5 @@
 package me.xginko.serverrestarts.modules;
 
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import me.xginko.serverrestarts.ServerRestartsPaper;
 import me.xginko.serverrestarts.common.CachedTickReport;
 import me.xginko.serverrestarts.common.CommonUtil;
@@ -15,14 +14,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class FireWatch implements ServerRestartModule {
 
-    private final @NotNull ServerRestartsPaper plugin;
     private final @NotNull Server server;
-    private @Nullable ScheduledTask heartbeat;
+    private @Nullable ScheduledFuture<?> heartbeat;
     private final @NotNull CachedTickReport tickReports;
     private final @NotNull AtomicLong millis_spent_lagging;
     private final long max_millis_lagging, initial_delay_millis, interval_millis;
@@ -31,9 +31,8 @@ public class FireWatch implements ServerRestartModule {
 
     public FireWatch() {
         shouldEnable();
-        this.plugin = ServerRestartsPaper.getInstance();
         this.tickReports = ServerRestartsPaper.getTickReports();
-        this.server = plugin.getServer();
+        this.server = ServerRestartsPaper.getInstance().getServer();
         this.millis_spent_lagging = new AtomicLong(0L);
         PaperConfigImpl config = ServerRestartsPaper.getConfiguration();
         config.master().addComment("fire-watch.enable",
@@ -60,7 +59,7 @@ public class FireWatch implements ServerRestartModule {
 
     @Override
     public void enable() {
-        this.heartbeat = server.getAsyncScheduler().runAtFixedRate(plugin, task -> {
+        this.heartbeat = Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> new Thread(() -> {
             if (ServerRestartsPaper.isRestarting) {
                 disable();
                 return;
@@ -115,11 +114,12 @@ public class FireWatch implements ServerRestartModule {
                     restartEvent.getDisableJoin(),
                     restartEvent.getKickAll()
             );
-        }, initial_delay_millis, interval_millis, TimeUnit.MILLISECONDS);
+        }).start(), initial_delay_millis, interval_millis, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void disable() {
-        if (this.heartbeat != null) this.heartbeat.cancel();
+        if (this.heartbeat != null)
+            this.heartbeat.cancel(true);
     }
 }
