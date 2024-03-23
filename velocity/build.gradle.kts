@@ -4,12 +4,6 @@ plugins {
     alias(libs.plugins.runvelocity)
 }
 
-tasks {
-    runVelocity {
-        version(libs.versions.runvelocityversion.get())
-    }
-}
-
 dependencies {
     implementation(projects.serverrestartsCommon)
     implementation(libs.configmaster)
@@ -18,10 +12,16 @@ dependencies {
     annotationProcessor(libs.velocity)
 }
 
-tasks.build.configure {
-    dependsOn("shadowJar")
-}
+tasks {
+    runVelocity {
+        version(libs.versions.runvelocityversion.get())
+    }
 
-tasks.shadowJar {
-    archiveFileName = "${rootProject.name}-${project.version}-velocity.jar"
+    build.configure {
+        dependsOn("shadowJar")
+    }
+
+    shadowJar {
+        archiveFileName = "${rootProject.name}-${project.version}-velocity.jar"
+    }
 }

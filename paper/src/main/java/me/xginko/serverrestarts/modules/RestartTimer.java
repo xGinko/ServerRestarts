@@ -1,6 +1,5 @@
 package me.xginko.serverrestarts.modules;
 
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import me.xginko.serverrestarts.ServerRestartsPaper;
 import me.xginko.serverrestarts.config.PaperConfigImpl;
 import me.xginko.serverrestarts.events.PreRestartEvent;
@@ -17,13 +16,17 @@ import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RestartTimer implements ServerRestartModule {
-    private record RestartTask(ScheduledTask countdownTask, RestartEvent.RestartType restartType) {}
-
+    private record RestartTask(ScheduledFuture<?> countdownTask, RestartEvent.RestartType restartType) {}
     private final @NotNull ServerRestartsPaper plugin;
-    private final @NotNull Set<ScheduledTask> pendingRestarts;
+    private final @NotNull ScheduledExecutorService executorService;
+    private final @NotNull Set<ScheduledFuture<?>> pendingRestarts;
     private final @NotNull PaperConfigImpl config;
     private @Nullable RestartTask activeRestart;
     private final boolean do_safe_restart;
@@ -33,6 +36,7 @@ public class RestartTimer implements ServerRestartModule {
         this.plugin = ServerRestartsPaper.getInstance();
         this.config = ServerRestartsPaper.getConfiguration();
         this.pendingRestarts = new HashSet<>(config.restart_times.size());
+        this.executorService = Executors.newScheduledThreadPool(config.restart_times.size());
         this.do_safe_restart = config.getBoolean("general.restart-gracefully", true, """
                 Will disable joining and kick all players before restarting.\s
                 If set to false, will immediately shutdown/restart (not advised).""");
@@ -47,10 +51,10 @@ public class RestartTimer implements ServerRestartModule {
     public void enable() {
         for (ZonedDateTime restart_time : config.restart_times) {
             final Duration time_left_until_restart = getDelay(restart_time);
-            pendingRestarts.add(plugin.getServer().getGlobalRegionScheduler().runDelayed(
-                    plugin,
-                    initRestart -> tryInitRestart(time_left_until_restart),
-                    time_left_until_restart.toSeconds() * 20L
+            this.pendingRestarts.add(executorService.schedule(
+                    () -> new Thread(() -> tryInitRestart(time_left_until_restart)).start(),
+                    time_left_until_restart.toMillis(),
+                    TimeUnit.MILLISECONDS
             ));
         }
     }
@@ -77,8 +81,10 @@ public class RestartTimer implements ServerRestartModule {
 
     @Override
     public void disable() {
-        this.pendingRestarts.forEach(ScheduledTask::cancel);
-        if (this.activeRestart != null) activeRestart.countdownTask().cancel();
+        this.pendingRestarts.forEach(restartTask -> restartTask.cancel(true));
+        if (this.activeRestart != null)
+            activeRestart.countdownTask().cancel(true);
+        this.executorService.shutdownNow();
     }
 
     private void tryInitRestart(Duration init) {
@@ -87,18 +93,23 @@ public class RestartTimer implements ServerRestartModule {
             return;
         }
 
-        PreRestartEvent preRestartEvent = new PreRestartEvent(false);
+        PreRestartEvent preRestartEvent = new PreRestartEvent(true);
         if (!preRestartEvent.callEvent()) return;
 
         final RestartEvent.RestartType restartType = preRestartEvent.getDelayTicks() <= 1L ? RestartEvent.RestartType.SCHEDULED : RestartEvent.RestartType.DELAYED;
         final AtomicReference<Duration> timeLeft = new AtomicReference<>(init);
 
-        this.activeRestart = new RestartTask(plugin.getServer().getGlobalRegionScheduler().runAtFixedRate(plugin, countdown -> {
+        this.activeRestart = new RestartTask(executorService.scheduleAtFixedRate(() -> {
+            assert activeRestart != null;
+            if (activeRestart.countdownTask.isCancelled()) {
+                return;
+            }
+
             Duration remaining = timeLeft.get();
 
             if (remaining.isZero() || remaining.isNegative()) {
                 RestartEvent restartEvent = new RestartEvent(
-                        false,
+                        true,
                         restartType,
                         ServerRestartsPaper.getConfiguration().restart_method,
                         do_safe_restart,
@@ -118,6 +129,8 @@ public class RestartTimer implements ServerRestartModule {
                         restartEvent.getKickAll()
                 );
 
+                activeRestart.countdownTask.cancel(true);
+
                 return;
             }
 
@@ -131,6 +144,6 @@ public class RestartTimer implements ServerRestartModule {
             }
 
             timeLeft.set(remaining.minusMillis(500));
-        }, preRestartEvent.getDelayTicks(), 10), restartType);
+        }, preRestartEvent.getDelayTicks() * 50L, 500L, TimeUnit.MILLISECONDS), restartType);
     }
 }
