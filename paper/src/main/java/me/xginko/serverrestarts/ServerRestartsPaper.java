@@ -22,13 +22,13 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 
 public final class ServerRestartsPaper extends JavaPlugin {
@@ -171,41 +171,38 @@ public final class ServerRestartsPaper extends JavaPlugin {
         }
     }
 
-    private void reloadLang() {
+    public void reloadLang() {
         languageCacheMap = new HashMap<>();
         try {
-            File langDirectory = new File(getDataFolder() + File.separator + "lang");
-            Files.createDirectories(langDirectory.toPath());
-            for (String fileName : getDefaultLanguageFiles()) {
-                final String localeString = fileName.substring(fileName.lastIndexOf('/') + 1, fileName.lastIndexOf('.'));
+            for (String localeString : getAvailableTranslations()) {
                 logger.info("Found language file for " + localeString);
                 languageCacheMap.put(localeString, new PaperLangCacheImpl(localeString));
             }
-            final Pattern langPattern = Pattern.compile("([a-z]{1,3}_[a-z]{1,3})(\\.yml)", Pattern.CASE_INSENSITIVE);
-            for (File langFile : langDirectory.listFiles()) {
-                final Matcher langMatcher = langPattern.matcher(langFile.getName());
-                if (langMatcher.find()) {
-                    String localeString = langMatcher.group(1).toLowerCase();
-                    if (!languageCacheMap.containsKey(localeString)) { // make sure it wasn't a default file that we already loaded
-                        logger.info("Found language file for "+ localeString);
-                        languageCacheMap.put(localeString, new PaperLangCacheImpl(localeString));
-                    }
-                }
+        } catch (Throwable t) {
+            logger.error("Error loading language files!", t);
+        } finally {
+            if (languageCacheMap.isEmpty()) {
+                logger.error("Unable to load translations. Disabling.");
+                getServer().getPluginManager().disablePlugin(this);
+            } else {
+                logger.info("Loaded " + languageCacheMap.size() + " translations");
             }
-        } catch (Exception e) {
-            logger.error("Error loading language files!", e);
         }
     }
 
-    private Set<String> getDefaultLanguageFiles() {
-        try (final JarFile pluginJarFile = new JarFile(this.getFile())) {
-            return pluginJarFile.stream()
-                    .map(ZipEntry::getName)
-                    .filter(name -> name.startsWith("lang/") && name.endsWith(".yml"))
-                    .collect(Collectors.toSet());
-        } catch (IOException e) {
-            logger.error("Failed getting default language files!", e);
-            return Collections.emptySet();
+    private SortedSet<String> getAvailableTranslations() {
+        try (final JarFile pluginJar = new JarFile(getFile())) {
+            final File langDirectory = new File(getDataFolder() + "/lang");
+            Files.createDirectories(langDirectory.toPath());
+            final Pattern langPattern = Pattern.compile("([a-z]{1,3}_[a-z]{1,3})(\\.yml)", Pattern.CASE_INSENSITIVE);
+            return Stream.concat(pluginJar.stream().map(ZipEntry::getName), Arrays.stream(langDirectory.listFiles()).map(File::getName))
+                    .map(langPattern::matcher)
+                    .filter(Matcher::find)
+                    .map(matcher -> matcher.group(1))
+                    .collect(Collectors.toCollection(TreeSet::new));
+        } catch (Throwable t) {
+            logger.error("Failed querying for available translations!", t);
+            return new TreeSet<>();
         }
     }
 }
