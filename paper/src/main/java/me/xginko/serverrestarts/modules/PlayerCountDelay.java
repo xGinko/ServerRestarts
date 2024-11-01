@@ -45,7 +45,7 @@ public class PlayerCountDelay implements ServerRestartModule, Listener {
 
     @Override
     public void disable() {
-        HandlerList.unregisterAll();
+        HandlerList.unregisterAll(this);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
