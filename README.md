@@ -1,3 +1,6 @@
+# Archived!
+# Use [![UltimateAutoRestart](https://www.spigotmc.org/resources/1-8-8-1-20-4-ultimateautorestart-need-an-autorestart-plugin-grab-the-best-one-today.64414/) instead 
+
 # ServerRestarts
 ## Schedule restarts for your Paper/Folia/Velocity server.
 [![FrameDupe](https://bstats.org/signatures/bukkit/ServerRestarts.svg)](https://bstats.org/plugin/bukkit/ServerRestarts/21162)
